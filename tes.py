@@ -13,7 +13,7 @@ def get_custom_filename(filename):
     # Mengambil ekstensi dari nama file
     ext = filename.split('.')[-1]
     # Membuat nama custom dengan timestamp dan ekstensi file
-    custom_name = f"{int(time.time())}.{ext}"  # Menggunakan timestamp sebagai nama unik
+    custom_name = f"{int(time.time())}.{ext}"  
     return custom_name
 
 # Membaca gambar yang di-upload dan menyimpannya
