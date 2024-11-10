@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, send_from_directory
+from flask import Flask, request, send_from_directory
 import os
 import time
 
@@ -31,9 +31,7 @@ def upload_image():
     filename = get_custom_filename(imageFile.filename)
     image_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     imageFile.save(image_path)
-
-    # Mengirimkan nama file gambar untuk ditampilkan di halaman HTML
-    return render_template('index.html', image_url=filename)
+    return f"Image uploaded successfully. Path: {image_path}"
 
 # Untuk menampilkan gambar dari server
 @app.route('/images/<filename>')
