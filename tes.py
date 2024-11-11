@@ -8,13 +8,9 @@ app = Flask(__name__)
 UPLOAD_FOLDER = './images/'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Fungsi untuk memberikan nama custom pada gambar
-def get_custom_filename(filename):
-    # Mengambil ekstensi dari nama file
-    ext = filename.split('.')[-1]
-    # Membuat nama custom dengan timestamp dan ekstensi file
-    custom_name = f"{int(time.time())}.{ext}"  
-    return custom_name
+# Fungsi untuk memberikan nama custom pada gambar dengan ekstensi .jpg
+def get_custom_filename():
+    return "imageFile.jpg"
 
 # Membaca gambar yang di-upload dan menyimpannya
 @app.route('/upload', methods=['POST'])
@@ -28,8 +24,13 @@ def upload_image():
         return 'No selected file'
 
     # Mendapatkan nama custom untuk file
-    filename = get_custom_filename(imageFile.filename)
+    filename = get_custom_filename()
     image_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+
+    # Hapus file sebelumnya jika ada
+    if os.path.exists(image_path):
+        os.remove(image_path)
+
     imageFile.save(image_path)
     return f"Image uploaded successfully. Path: {image_path}"
 
