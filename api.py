@@ -1,6 +1,7 @@
 from flask import Flask, request, send_from_directory
 import os
 import time
+import json
 
 app = Flask(__name__)
 
@@ -38,6 +39,19 @@ def upload_image():
 @app.route('/images/<filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+# Predict Image
+@app.route('/predict', methods=['GET'])
+def predict_image():
+      # Dummy prediction logic
+    prediction = "anak"  # Ganti return dari hasil predict kamu ya @atha (anak/remaja/dewasa)
+
+        # Create a JSON response
+    response = {
+            "prediction": prediction
+    }
+
+    return json.dumps(response)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8004, debug=True)
