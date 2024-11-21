@@ -1,57 +1,85 @@
-from flask import Flask, request, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory
 import os
-import time
 import json
+import cv2
+import numpy as np
+from sklearn.ensemble import RandomForestClassifier
+from skimage.feature import local_binary_pattern
+import joblib
 
 app = Flask(__name__)
-
-# Direktori untuk menyimpan gambar yang di-upload
 UPLOAD_FOLDER = './images/'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Fungsi untuk memberikan nama custom pada gambar dengan ekstensi .jpg
-def get_custom_filename():
-    return "imageFile.jpg"
+# Load model dan face detector
+model = joblib.load('famscreen_model.pkl')
+face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
-# Membaca gambar yang di-upload dan menyimpannya
+def enhance_image(image):
+    kernel = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
+    return cv2.filter2D(image, -1, kernel)
+
+def extract_lbp_features(image, radius=2, n_points=16):
+    lbp = local_binary_pattern(image, n_points, radius, method="uniform")
+    lbp_hist, _ = np.histogram(lbp.ravel(), bins=np.arange(0, n_points + 3), range=(0, n_points + 2))
+    lbp_hist = lbp_hist.astype("float")
+    lbp_hist /= (lbp_hist.sum() + 1e-6)
+    return lbp_hist
+
+def age_category_to_label(age_category):
+    if age_category == 0:
+        return "Anak-anak"
+    elif age_category == 1:
+        return "Remaja"
+    elif age_category == 2:
+        return "Dewasa"
+    return "Tidak Valid"
+
 @app.route('/upload', methods=['POST'])
-def upload_image():
-    # Memeriksa apakah file gambar ada dalam request
+def upload_and_predict():
     if 'image' not in request.files:
-        return 'No image part'
+        return jsonify({'error': 'No image file found in request'}), 400
 
-    imageFile = request.files['image']
-    if imageFile.filename == '':
-        return 'No selected file'
+    image_file = request.files['image']
+    if image_file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
 
-    # Mendapatkan nama custom untuk file
-    filename = get_custom_filename()
+    # Save uploaded file
+    filename = "uploaded_image.jpg"
     image_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-
-    # Hapus file sebelumnya jika ada
     if os.path.exists(image_path):
         os.remove(image_path)
+    image_file.save(image_path)
 
-    imageFile.save(image_path)
-    return f"Image uploaded successfully. Path: {image_path}"
+    # Process and predict
+    image = cv2.imread(image_path)
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    enhanced_img = enhance_image(gray_image)
+    faces = face_cascade.detectMultiScale(enhanced_img, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
 
-# Untuk menampilkan gambar dari server
+    if len(faces) > 0:
+        for (x, y, w, h) in faces:
+            face_image = enhanced_img[y:y+h, x:x+w]
+            face_image_resized = cv2.resize(face_image, (256, 256))
+            lbp_features = extract_lbp_features(face_image_resized)
+            prediction = model.predict([lbp_features])
+            predicted_age_label = age_category_to_label(prediction[0])
+            return jsonify({
+                'status': 'success',
+                'prediction': predicted_age_label,
+            }), 200
+    else:
+        # Response jika tidak ada wajah terdeteksi
+        return jsonify({
+            'status': 'failure',
+            'message': 'No face detected in the image.',
+            'image_url': f"http://{request.host}/images/{filename}"
+        }), 200   
+
+
 @app.route('/images/<filename>')
-def uploaded_file(filename):
+def serve_image(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
-
-# Predict Image
-@app.route('/predict', methods=['GET'])
-def predict_image():
-      # Dummy prediction logic
-    prediction = "anak"  # Ganti return dari hasil predict kamu ya @atha (anak/remaja/dewasa)
-
-        # Create a JSON response
-    response = {
-            "prediction": prediction
-    }
-
-    return json.dumps(response)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8004, debug=True)
