@@ -76,6 +76,13 @@ def upload_and_predict():
             'image_url': f"http://{request.host}/images/{filename}"
         }), 200   
 
+@app.route('/health', methods=['GET'])
+def health_check():
+    return jsonify({
+        'status': 'ok',
+        'model_loaded': model is not None,
+        'face_cascade_loaded': not face_cascade.empty()
+    }), 200
 
 @app.route('/images/<filename>')
 def serve_image(filename):
