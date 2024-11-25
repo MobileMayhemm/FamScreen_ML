@@ -63,10 +63,10 @@ def upload_and_predict():
             face_image_resized = cv2.resize(face_image, (256, 256))
             lbp_features = extract_lbp_features(face_image_resized)
             prediction = model.predict([lbp_features])
-            predicted_age_label = age_category_to_label(prediction[0])
+            # Return prediction as is (0, 1, or 2)
             return jsonify({
                 'status': 'success',
-                'prediction': predicted_age_label,
+                'prediction': int(prediction[0]),  # Convert NumPy value to standard Python int
             }), 200
     else:
         # Response jika tidak ada wajah terdeteksi
