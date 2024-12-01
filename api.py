@@ -4,6 +4,8 @@ import cv2
 import numpy as np
 from skimage.feature import local_binary_pattern
 import joblib
+import mediapipe as mp
+
 
 app = Flask(__name__)
 UPLOAD_FOLDER = './images/'
