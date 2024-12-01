@@ -12,7 +12,7 @@ UPLOAD_FOLDER = './images/'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Load model dan face detector
-model = joblib.load('famscreen_model.pkl')
+model = joblib.load('New/famscreen_model.pkl')
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
 def enhance_image(image):
