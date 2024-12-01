@@ -5,6 +5,8 @@ import numpy as np
 from skimage.feature import local_binary_pattern
 import joblib
 import mediapipe as mp
+import pandas as pd
+
 
 
 app = Flask(__name__)
