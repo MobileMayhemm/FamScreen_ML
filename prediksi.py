@@ -2,7 +2,6 @@ from flask import Flask, request, jsonify, send_from_directory
 import os
 import cv2
 import numpy as np
-from sklearn.ensemble import RandomForestClassifier
 from skimage.feature import local_binary_pattern
 import joblib
 import mediapipe as mp
@@ -13,8 +12,8 @@ UPLOAD_FOLDER = './images/'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Load model dan dataset
-df = pd.read_csv("df_fitur.csv")
-model = joblib.load('New/famscreen_model.pkl')
+df = pd.read_csv(r"D:\Belajar Machine Learning\famscreen_ml\FamScreen_ML\df_fitur.csv")
+model = joblib.load(r"D:\Belajar Machine Learning\famscreen_ml\FamScreen_ML\famscreen_model.pkl")
 
 # Fungsi untuk melakukan enhancement pada citra
 def enhance_image(image):
