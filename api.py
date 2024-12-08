@@ -12,8 +12,8 @@ UPLOAD_FOLDER = './images/'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Load model dan dataset
-df = pd.read_csv('df_sampled.csv')
-model = joblib.load('FamScreenModel.pkl')
+df = pd.read_csv('df_fitur.csv')
+model = joblib.load('model.pkl')
 
 # Fungsi untuk melakukan enhancement pada citra
 def enhance_image(image):
