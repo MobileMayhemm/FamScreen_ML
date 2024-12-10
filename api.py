@@ -156,8 +156,8 @@ def upload_and_predict():
        if image_file.filename == '':
               return jsonify({'error': 'No selected file'}), 400
 
-       # Save uploaded file
-       filename = "uploaded_image.jpg"
+       # Save uploaded file with its original filename
+       filename = image_file.filename
        image_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
        if os.path.exists(image_path):
               os.remove(image_path)
@@ -171,6 +171,7 @@ def upload_and_predict():
                      return jsonify({
                             'status': 'success',
                             'prediction': int(prediction),  # Convert NumPy value to standard Python int
+                            'image_url': f"http://{request.host}/images/{filename}"
               }), 200
               else:
                      return jsonify({
